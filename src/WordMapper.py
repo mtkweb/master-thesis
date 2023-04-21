@@ -24,7 +24,7 @@ class WordMapper:
         pass
 
     def get_word_recording_mapping(self) -> pd.DataFrame:
-        return self.words
+        return self.words[self.words['recording'].notna()]
 
     def _is_word_recording(self, file_name: str) -> bool:
         return re.fullmatch(self.recording_file_name_pattern, file_name) is not None
