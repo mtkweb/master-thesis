@@ -22,7 +22,14 @@ class Wav2Vec2Runner:
     def run(self, mapping: pd.DataFrame, directory: str) -> List[Tuple[List[str], Tuple[torch.Tensor]]]:
         dataset = [self._load_recording(os.path.join(directory, file_name)) for file_name in mapping['recording']]
         dataset = [self._process_recording(recording) for recording in dataset]
-        return dataset
+
+        dataset_dict = {}
+        for word, (transcription, hidden_states) in zip(mapping['Value'], dataset):
+            if word not in dataset_dict:
+                dataset_dict[word] = []
+            dataset_dict[word].append((transcription, hidden_states))
+
+        return dataset_dict
 
     def _load_recording(self, file_name: str) -> np.ndarray:
         speech_array, sampling_rate = librosa.load(file_name, sr=Wav2Vec2Runner.SAMPLE_RATE)
