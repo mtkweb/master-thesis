@@ -23,8 +23,11 @@ class WordMapper:
         self.words['recording'] = pd.Series(files)
         pass
 
-    def get_word_recording_mapping(self) -> pd.DataFrame:
-        return self.words[self.words['recording'].notna()]
+    def get_word_recording_mapping(self, filter_out_redundant=False) -> pd.DataFrame:
+        words = self.words[self.words['recording'].notna()]
+        if filter_out_redundant:
+            return words[words['is_redundant'] == False]
+        return words
 
     def _is_word_recording(self, file_name: str) -> bool:
         return re.fullmatch(self.recording_file_name_pattern, file_name) is not None
