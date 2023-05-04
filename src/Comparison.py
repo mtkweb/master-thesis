@@ -12,11 +12,11 @@ class Comparison:
         self.hidden_states_b = hidden_states_b
         self.diff_at = different_at
 
-    def calculate_all_similarities(self, hidden_layer_index):
+    def calculate_all_similarities(self, hidden_layer_index) -> torch.Tensor:
         similarities_2darray = torch.zeros((
             self.hidden_states_a[hidden_layer_index][0].shape[0],
             self.hidden_states_b[hidden_layer_index][0].shape[0]
-        ))
+        ), dtype=torch.double)
         for i in range(self.hidden_states_a[hidden_layer_index][0].shape[0]):
             for j in range(self.hidden_states_b[hidden_layer_index][0].shape[0]):
                 similarities_2darray[i][j] = torch.cosine_similarity(
@@ -36,14 +36,10 @@ class Comparison:
 
     def calculate_alignment(self, hidden_layer_index: int) -> dtw.DTW:
         return dtw.dtw(
-            self.hidden_states_a[hidden_layer_index][0],
-            self.hidden_states_b[hidden_layer_index][0],
-            dist_method='cosine',
+            # We need cost here, so we subtract the similarities from 1
+            x=1-self.calculate_all_similarities(hidden_layer_index),
             keep_internals=True,
         )
-        #return dtw.dtw(
-            # calculate distances in advance, maybe with 1-cosine similarity
-        #)
 
     def calculate_distance_along_path(self, alignment: dtw.DTW, hidden_layer_index: int) -> List[torch.Tensor]:
         return [
