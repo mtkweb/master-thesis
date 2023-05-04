@@ -13,25 +13,28 @@ class Comparison:
         self.diff_at = different_at
 
     def calculate_all_similarities(self, hidden_layer_index) -> torch.Tensor:
-        similarities_2darray = torch.zeros((
-            self.hidden_states_a[hidden_layer_index][0].shape[0],
-            self.hidden_states_b[hidden_layer_index][0].shape[0]
-        ), dtype=torch.double)
-        for i in range(self.hidden_states_a[hidden_layer_index][0].shape[0]):
-            for j in range(self.hidden_states_b[hidden_layer_index][0].shape[0]):
-                similarities_2darray[i][j] = torch.cosine_similarity(
-                    self.hidden_states_a[hidden_layer_index][0][i],
-                    self.hidden_states_b[hidden_layer_index][0][j],
+        hidden_states_a_at_layer = self.hidden_states_a[hidden_layer_index]
+        hidden_states_b_at_layer = self.hidden_states_b[hidden_layer_index]
+
+        duration_a = hidden_states_a_at_layer.shape[0]
+        duration_b = hidden_states_b_at_layer.shape[0]
+
+        similarities_2d_array = torch.zeros((duration_a, duration_b), dtype=torch.double)
+        for i in range(duration_a):
+            for j in range(duration_b):
+                similarities_2d_array[i][j] = torch.cosine_similarity(
+                    hidden_states_a_at_layer[i],
+                    hidden_states_b_at_layer[j],
                     dim=0
                 )
 
-        return similarities_2darray
+        return similarities_2d_array
 
     def get_shortest_path_similarities(self) -> List[List[torch.Tensor]]:
         similarities = []
-        for i in range(len(self.hidden_states_a)):
-            alignment = self.calculate_alignment(i)
-            similarities.append(self.calculate_distance_along_path(alignment, i))
+        for hidden_layer_index in range(len(self.hidden_states_a)):
+            alignment = self.calculate_alignment(hidden_layer_index)
+            similarities.append(self.calculate_distance_along_path(alignment, hidden_layer_index))
         return similarities
 
     def calculate_alignment(self, hidden_layer_index: int) -> dtw.DTW:
@@ -44,8 +47,8 @@ class Comparison:
     def calculate_distance_along_path(self, alignment: dtw.DTW, hidden_layer_index: int) -> List[torch.Tensor]:
         return [
             torch.cosine_similarity(
-                self.hidden_states_a[hidden_layer_index][0][i],
-                self.hidden_states_b[hidden_layer_index][0][j],
+                self.hidden_states_a[hidden_layer_index][i],
+                self.hidden_states_b[hidden_layer_index][j],
                 dim=0,
             )
             for i, j in zip(alignment.index1, alignment.index2)

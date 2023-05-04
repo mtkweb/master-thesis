@@ -19,11 +19,11 @@ class Wav2Vec2Runner:
         self.processor = Wav2Vec2Processor.from_pretrained(Wav2Vec2Runner.MODEL_NAME)
         self.config = Wav2Vec2Config.from_pretrained(Wav2Vec2Runner.MODEL_NAME)
 
-    def run(self, mapping: pd.DataFrame, directory: str) -> List[Tuple[List[str], Tuple[torch.Tensor]]]:
+    def run(self, mapping: pd.DataFrame, directory: str) -> dict[str, [Tuple[str, torch.Tensor]]]:
         dataset = [self._load_recording(os.path.join(directory, file_name)) for file_name in mapping['recording']]
         dataset = [self._process_recording(recording) for recording in dataset]
 
-        dataset_dict = {}
+        dataset_dict: dict[str, List[Tuple[str, torch.Tensor]]] = {}
         for word, (transcription, hidden_states) in zip(mapping['Value'], dataset):
             if word not in dataset_dict:
                 dataset_dict[word] = []
@@ -35,7 +35,7 @@ class Wav2Vec2Runner:
         speech_array, sampling_rate = librosa.load(file_name, sr=Wav2Vec2Runner.SAMPLE_RATE)
         return speech_array
 
-    def _process_recording(self, recording: np.ndarray) -> Tuple[List[str], Tuple[torch.Tensor]]:
+    def _process_recording(self, recording: np.ndarray) -> Tuple[str, torch.Tensor]:
         input_values = self.processor(
             recording,
             sampling_rate=Wav2Vec2Runner.SAMPLE_RATE,
@@ -48,7 +48,10 @@ class Wav2Vec2Runner:
             logits = model_output.logits
 
         predicted_ids = torch.argmax(logits, dim=-1)
-        transcription = self.processor.batch_decode(predicted_ids)
-        hidden_states = model_output.hidden_states
+        transcription: str = self.processor.batch_decode(predicted_ids)[0]
+
+        hidden_states_tuple: Tuple[torch.Tensor] = model_output.hidden_states
+        hidden_states: torch.Tensor = torch.stack(list(hidden_states_tuple), dim=0)
+        hidden_states = torch.squeeze(hidden_states, dim=1)
 
         return transcription, hidden_states
