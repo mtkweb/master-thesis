@@ -27,47 +27,46 @@ if __name__ == '__main__':
 
     # Generate minimal pairs
     minimal_pairs = find_minimal_pairs(mapping['Value'].to_list())
-    # For each minimal pair, apply DTW to the hidden states
-    #hidden_layer_index = 7
 
+    all_similarities = []
 
-    for hidden_layer_index in range(13):
-        distance_paths = []
-        i = 0
-        for (word_a, word_b), different_at in minimal_pairs:
-            if word_a != 'kip' or word_b != 'kik':
-                continue
+    i = 0
+    for (word_a, word_b), different_at in minimal_pairs:
+        if word_a != 'kip' or word_b != 'kik':
+            pass
 
-            if different_at != 2:
-                continue
+        if different_at != 2:
+            continue
 
-            i = i + 1
-            if i == 10:
-                break
+        i = i + 1
+        if i == 10:
+            break
 
-            recording_index = 0
-            _, hidden_states_a = predictions[word_a][recording_index]
-            _, hidden_states_b = predictions[word_b][recording_index]
+        recording_index = 0
+        _, hidden_states_a = predictions[word_a][recording_index]
+        _, hidden_states_b = predictions[word_b][recording_index]
 
-            comparison = Comparison(word_a, hidden_states_a, word_b, hidden_states_b, different_at)
+        comparison = Comparison(word_a, hidden_states_a, word_b, hidden_states_b, different_at)
 
-            alignment = comparison.calculate_alignment(hidden_layer_index)
-            alignment.plot(type="alignment")
-            plt.show()
+        # Some plotting to evaluate the correctness of the alignment
+        alignment = comparison.calculate_alignment()
+        alignment.plot(type="alignment")
+        plt.show()
 
-            similarities = comparison.calculate_all_similarities(hidden_layer_index)
-            sns.heatmap(similarities)
-            plt.show()
+        similarities = comparison.calculate_all_similarities(0)
+        sns.heatmap(similarities)
+        plt.show()
 
-            distance_along_path = comparison.calculate_distance_along_path(alignment, hidden_layer_index)
-            distance_paths.append(distance_along_path)
+        # Calculate the similarities along the best path for all layers
+        similarities_along_path = comparison.get_all_path_similarities()
+        all_similarities.append(similarities_along_path)
 
-        distance_paths = pad_arrays(distance_paths)
-
-        for i in range(0, len(distance_paths)):
-            sns.lineplot(x=range(len(distance_paths[0])), y=distance_paths[i], alpha=0.3)
-        plt.title('Cosine similarity (inverted) along DTW path for minimal pairs at layer ' + str(hidden_layer_index))
-        #plt.savefig('cosine_similarity_along_dtw_path_layer' + str(hidden_layer_index) + '.png')
+    for hidden_layer_index in range(len(all_similarities[0])):
+        similarities_at_layer = [all_similarities[i][hidden_layer_index] for i in range(len(all_similarities))]
+        similarities_at_layer = pad_arrays(similarities_at_layer)
+        for similarities in similarities_at_layer:
+            sns.lineplot(x=range(len(similarities)), y=similarities, alpha=0.3)
+        plt.title('Cosine similarity along DTW path for minimal pairs at layer ' + str(hidden_layer_index))
         plt.show()
 
     grouped = mapping.groupby('Value')
