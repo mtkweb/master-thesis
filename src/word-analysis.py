@@ -1,6 +1,7 @@
 import torch
 
 from src.Comparison import Comparison
+from src.PlotFactory import PlotFactory
 from src.Wav2Vec2Runner import Wav2Vec2Runner
 from src.WordMapper import WordMapper
 from src.minimal_pairs import find_minimal_pairs
@@ -29,6 +30,7 @@ if __name__ == '__main__':
     minimal_pairs = find_minimal_pairs(mapping['Value'].to_list())
 
     all_similarities = []
+    plot_factory = PlotFactory()
 
     i = 0
     for (word_a, word_b), different_at in minimal_pairs:
@@ -39,7 +41,7 @@ if __name__ == '__main__':
             continue
 
         i = i + 1
-        if i == 10:
+        if i == 100:
             break
 
         recording_index = 0
@@ -49,25 +51,21 @@ if __name__ == '__main__':
         comparison = Comparison(word_a, hidden_states_a, word_b, hidden_states_b, different_at)
 
         # Some plotting to evaluate the correctness of the alignment
-        alignment = comparison.calculate_alignment()
-        alignment.plot(type="alignment")
-        plt.show()
+        #alignment = comparison.calculate_alignment()
+        #alignment.plot(type="alignment")
+        #plt.show()
 
-        similarities = comparison.calculate_all_similarities(0)
-        sns.heatmap(similarities)
-        plt.show()
+        #similarities = comparison.calculate_all_similarities(0)
+        #sns.heatmap(similarities)
+        #plt.show()
 
         # Calculate the similarities along the best path for all layers
-        similarities_along_path = comparison.get_all_path_similarities()
-        all_similarities.append(similarities_along_path)
+        #similarities_along_path = comparison.get_all_path_similarities()
+        #all_similarities.append(similarities_along_path)
+        plot_factory.add_comparison(comparison)
 
-    for hidden_layer_index in range(len(all_similarities[0])):
-        similarities_at_layer = [all_similarities[i][hidden_layer_index] for i in range(len(all_similarities))]
-        similarities_at_layer = pad_arrays(similarities_at_layer)
-        for similarities in similarities_at_layer:
-            sns.lineplot(x=range(len(similarities)), y=similarities, alpha=0.3)
-        plt.title('Cosine similarity along DTW path for minimal pairs at layer ' + str(hidden_layer_index))
-        plt.show()
+    plot_factory.initialize_path_similarities()
+    plot_factory.plot_all_layers()
 
     grouped = mapping.groupby('Value')
     print(grouped.groups)

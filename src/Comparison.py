@@ -15,6 +15,9 @@ class Comparison:
         dtw_alignment = self.calculate_alignment()
         self.alignment = list(zip(dtw_alignment.index1, dtw_alignment.index2))
 
+    def get_different_at(self) -> int:
+        return self.diff_at
+
     def calculate_alignment(self) -> List[Tuple[int, int]]:
         return dtw.dtw(
             # We need cost here, so we subtract the similarities from 1
@@ -40,7 +43,7 @@ class Comparison:
 
         return similarities_2d_array
 
-    def get_all_path_similarities(self) -> List[List[torch.Tensor]]:
+    def get_all_path_similarities(self) -> List[torch.Tensor]:
         similarities = []
         for hidden_layer_index in range(len(self.hidden_states_a)):
             similarities.append(self.calculate_similarity_along_path(hidden_layer_index))
