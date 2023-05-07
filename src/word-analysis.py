@@ -5,8 +5,6 @@ from src.PlotFactory import PlotFactory
 from src.Wav2Vec2Runner import Wav2Vec2Runner
 from src.WordMapper import WordMapper
 from src.minimal_pairs import find_minimal_pairs
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 def pad_arrays(arrays):
     max_length = max([len(array) for array in arrays])
@@ -38,11 +36,11 @@ if __name__ == '__main__':
             pass
 
         if different_at != 2:
-            continue
+            pass
 
         i = i + 1
         if i == 100:
-            break
+            pass
 
         recording_index = 0
         _, hidden_states_a = predictions[word_a][recording_index]
@@ -64,7 +62,6 @@ if __name__ == '__main__':
         #all_similarities.append(similarities_along_path)
         plot_factory.add_comparison(comparison)
 
-    plot_factory.initialize_path_similarities()
     plot_factory.plot_all_layers()
 
     grouped = mapping.groupby('Value')
