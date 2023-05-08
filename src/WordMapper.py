@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import re
+import numpy as np
 
 
 class WordMapper:
@@ -10,7 +11,14 @@ class WordMapper:
         self.recording_file_name_pattern = re.compile(r'word_(\d+)\.wav')
 
     def import_words(self, file_name: str, redundant_at: int = None):
-        self.words = pd.read_csv(file_name)
+        self.words = pd.read_csv(
+            file_name,
+            delimiter=',',
+            header=0,
+            dtype={'Group': np.int32, 'Word': np.int32, 'Value': str},
+            keep_default_na=False,
+            na_values=['_'],
+        )
         self.words['is_redundant'] = self.words['Word'] == redundant_at
 
     def import_recordings(self, directory: str):
