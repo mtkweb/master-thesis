@@ -21,7 +21,7 @@ class Comparison:
     def calculate_alignment(self) -> List[Tuple[int, int]]:
         return dtw.dtw(
             # We need cost here, so we subtract the similarities from 1
-            x=1 - self.calculate_all_similarities(0),
+            x=1-self.calculate_all_similarities(0),
             keep_internals=True,
         )
 
