@@ -1,17 +1,11 @@
-import torch
-
 from src.Comparison import Comparison
 from src.PlotFactory import PlotFactory
 from src.Wav2Vec2Runner import Wav2Vec2Runner
 from src.WordMapper import WordMapper
 from src.minimal_pairs import find_minimal_pairs
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-def pad_arrays(arrays):
-    max_length = max([len(array) for array in arrays])
-    padded_arrays = []
-    for array in arrays:
-        padded_arrays.append(torch.cat([torch.Tensor(array), torch.ones(max_length - len(array))]))
-    return padded_arrays
 
 if __name__ == '__main__':
     mapper = WordMapper()
@@ -21,15 +15,13 @@ if __name__ == '__main__':
     mapping = mapper.get_word_recording_mapping(filter_out_redundant=True)
     print(mapping.head())
 
-    runner = Wav2Vec2Runner()
-    predictions = runner.run(mapping, '../recordings/segments')
-
     # Generate minimal pairs
     minimal_pairs = find_minimal_pairs(mapping['Value'].to_list())
 
-    all_similarities = []
-    plot_factory = PlotFactory()
+    runner = Wav2Vec2Runner()
+    predictions = runner.run(mapping, '../recordings/segments')
 
+    plot_factory = PlotFactory()
     i = 0
     for (word_a, word_b), different_at in minimal_pairs:
         if word_a != 'kip' or word_b != 'kik':
@@ -66,4 +58,3 @@ if __name__ == '__main__':
 
     grouped = mapping.groupby('Value')
     print(grouped.groups)
-    pass

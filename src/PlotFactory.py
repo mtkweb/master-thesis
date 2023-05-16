@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+
 class PlotFactory:
 
     def __init__(self):
@@ -47,6 +48,3 @@ class PlotFactory:
         dataframe['different_at'] = different_at
 
         return dataframe
-
-
-
