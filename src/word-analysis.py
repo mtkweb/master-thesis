@@ -15,8 +15,11 @@ if __name__ == '__main__':
     mapping = mapper.get_word_recording_mapping(filter_out_redundant=True)
     print(mapping.head())
 
+    grouped = mapping.groupby('Value')
+    print(grouped.groups)
+
     # Generate minimal pairs
-    minimal_pairs = find_minimal_pairs(mapping['Value'].to_list())
+    minimal_pairs = find_minimal_pairs(mapper.get_unique_words().tolist())
 
     runner = Wav2Vec2Runner()
     predictions = runner.run(mapping, '../recordings/segments')
@@ -55,6 +58,3 @@ if __name__ == '__main__':
         plot_factory.add_comparison(comparison)
 
     plot_factory.plot_all_layers()
-
-    grouped = mapping.groupby('Value')
-    print(grouped.groups)
