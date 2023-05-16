@@ -31,7 +31,7 @@ class PlotFactory:
         all_data = pd.concat(dataframes)
         all_data['x_rounded'] = all_data['x'].apply(lambda x: round(x / 0.05) * 0.05)
 
-        plot = sns.lineplot(data=all_data, x='x_rounded', y='y', hue='different_at', alpha=0.3)
+        plot = sns.lineplot(data=all_data, x='x_rounded', y='y', hue='different_at', alpha=0.3, errorbar=('pi', 50))
         plot.set(xlabel='Time', ylabel='Cosine similarity')
         plot.set(xlim=(0, 1), ylim=(0, 1))
         plot.set(title='Cosine similarity along DTW path for all minimal pairs at layer ' + str(layer))
