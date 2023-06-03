@@ -4,6 +4,7 @@ def calculate_levenshtein_distance(word_a: str, word_b: str) -> Tuple[int, List[
     if len(word_a) != len(word_b):
         raise ValueError('Words must be of the same length')
 
+    # Actually, we now calculate the Hamming distance, but that's fine for our purposes
     number_of_different_letters = 0
     different_positions = []
     for i in range(len(word_a)):
