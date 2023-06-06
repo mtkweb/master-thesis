@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # Generate minimal pairs
     minimal_pairs = find_minimal_pairs(mapper.get_unique_words().tolist())
 
-    runner = Wav2Vec2Runner()
+    runner = Wav2Vec2Runner(True)
     predictions = runner.run(mapping, '../recordings/segments')
 
     plot_factory = PlotFactory()

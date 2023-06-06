@@ -11,13 +11,25 @@ class Wav2Vec2Runner:
     MODEL_NAME = 'facebook/wav2vec2-base-960h'
     SAMPLE_RATE = 16000
 
-    def __init__(self):
+    def __init__(self, use_carrier_phrase: bool):
+        self.use_carrier_phrase = use_carrier_phrase
         self._initialize_model()
 
     def _initialize_model(self):
         self.model = Wav2Vec2ForCTC.from_pretrained(Wav2Vec2Runner.MODEL_NAME)
         self.processor = Wav2Vec2Processor.from_pretrained(Wav2Vec2Runner.MODEL_NAME)
         self.config = Wav2Vec2Config.from_pretrained(Wav2Vec2Runner.MODEL_NAME)
+
+        if self.use_carrier_phrase:
+            self.carrier_phrase, _ = librosa.load('../recordings/carrier_phrase_16k.wav', sr=Wav2Vec2Runner.SAMPLE_RATE)
+            self.carrier_phrase = np.concatenate([[
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                #0.0,
+                #0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            ], self.carrier_phrase])
 
     def run(self, mapping: pd.DataFrame, directory: str) -> dict[str, [Tuple[str, torch.Tensor]]]:
         dataset = [self._load_recording(os.path.join(directory, file_name)) for file_name in mapping['recording']]
@@ -36,6 +48,9 @@ class Wav2Vec2Runner:
         return speech_array
 
     def _process_recording(self, recording: np.ndarray) -> Tuple[str, torch.Tensor]:
+        if self.use_carrier_phrase:
+            recording = np.concatenate([self.carrier_phrase, recording])
+
         input_values = self.processor(
             recording,
             sampling_rate=Wav2Vec2Runner.SAMPLE_RATE,
@@ -53,5 +68,9 @@ class Wav2Vec2Runner:
         hidden_states_tuple: Tuple[torch.Tensor] = model_output.hidden_states
         hidden_states: torch.Tensor = torch.stack(list(hidden_states_tuple), dim=0)
         hidden_states = torch.squeeze(hidden_states, dim=1)
+
+        if self.use_carrier_phrase:
+            # Length of carrier phrase is 79, zo we remove the first 79 hidden states
+            hidden_states = hidden_states[:, 79:, :]
 
         return transcription, hidden_states
