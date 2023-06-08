@@ -24,7 +24,7 @@ if __name__ == '__main__':
     runner = Wav2Vec2Runner(use_carrier_phrase=False)
     predictions = runner.run(mapping, '../recordings/segments')
 
-    plot_factory = PlotFactory()
+    plot_factory = PlotFactory(save_figures=False)
     for (word_a, word_b), different_at in minimal_pairs:
         recording_index = 0
         _, hidden_states_a = predictions[word_a][recording_index]

@@ -8,10 +8,12 @@ import matplotlib.pyplot as plt
 
 class PlotFactory:
 
-    def __init__(self):
+    def __init__(self, save_figures: bool):
         self.comparisons: List[Comparison] = []
         self.path_similarities: List[List[torch.Tensor]] = []
         self.longest_path_length = None
+
+        self.save_figures = save_figures
 
     def add_comparison(self, comparison: Comparison):
         self.comparisons.append(comparison)
@@ -35,6 +37,9 @@ class PlotFactory:
         plot.set(xlabel='Time', ylabel='Cosine similarity')
         plot.set(xlim=(0, 1), ylim=(0, 1))
         plot.set(title='Cosine similarity along DTW path for all minimal pairs at layer ' + str(layer))
+
+        if self.save_figures:
+            plt.savefig('layer_' + str(layer) + '.png')
         plt.show()
 
     def _find_longest_path_length(self) -> int:
