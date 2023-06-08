@@ -18,9 +18,6 @@ if __name__ == '__main__':
     mapping = mapping[mapping['rank'] == 1.0]
     print(mapping.head())
 
-    grouped = mapping.groupby('Value')
-    print(grouped.groups)
-
     # Generate minimal pairs
     minimal_pairs = find_minimal_pairs(mapper.get_unique_words().tolist())
 
@@ -28,18 +25,7 @@ if __name__ == '__main__':
     predictions = runner.run(mapping, '../recordings/segments')
 
     plot_factory = PlotFactory()
-    i = 0
     for (word_a, word_b), different_at in minimal_pairs:
-        if word_a != 'kip' or word_b != 'kik':
-            pass
-
-        if different_at != 2:
-            pass
-
-        i = i + 1
-        if i == 100:
-            pass
-
         recording_index = 0
         _, hidden_states_a = predictions[word_a][recording_index]
         _, hidden_states_b = predictions[word_b][recording_index]
