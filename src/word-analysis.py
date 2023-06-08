@@ -3,6 +3,7 @@ from src.PlotFactory import PlotFactory
 from src.Wav2Vec2Runner import Wav2Vec2Runner
 from src.WordMapper import WordMapper
 from src.minimal_pairs import find_minimal_pairs
+from src.calculate_ranking import calculate_ranking
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -13,6 +14,8 @@ if __name__ == '__main__':
     mapper.import_recordings('../recordings/segments')
 
     mapping = mapper.get_word_recording_mapping(filter_out_redundant=True)
+    mapping = calculate_ranking(mapping, mapper.get_unique_words())
+    mapping = mapping[mapping['rank'] == 1.0]
     print(mapping.head())
 
     grouped = mapping.groupby('Value')
@@ -21,7 +24,7 @@ if __name__ == '__main__':
     # Generate minimal pairs
     minimal_pairs = find_minimal_pairs(mapper.get_unique_words().tolist())
 
-    runner = Wav2Vec2Runner(True)
+    runner = Wav2Vec2Runner(use_carrier_phrase=False)
     predictions = runner.run(mapping, '../recordings/segments')
 
     plot_factory = PlotFactory()
