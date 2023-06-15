@@ -23,10 +23,10 @@ class WordMapper:
 
     def import_recordings(self, directory: str):
         files = os.listdir(directory)
-        if len(files) > len(self.words):
-            raise Exception('More files than words')
         files = list(filter(self._is_word_recording, files))
         files = sorted(files, key=self._get_recording_index)
+        if len(files) > len(self.words):
+            raise Exception('More files than words')
 
         self.words['recording'] = pd.Series(files)
         pass
@@ -41,7 +41,10 @@ class WordMapper:
         return self.get_word_recording_mapping(True)['Value'].unique()
 
     def _is_word_recording(self, file_name: str) -> bool:
-        return re.fullmatch(self.recording_file_name_pattern, file_name) is not None
+        is_word_recording = re.fullmatch(self.recording_file_name_pattern, file_name) is not None
+        if is_word_recording is False:
+            print(f'File {file_name} does not match pattern')
+        return is_word_recording
 
     def _get_recording_index(self, file_name: str) -> int:
         return int(re.fullmatch(self.recording_file_name_pattern, file_name).group(1))
