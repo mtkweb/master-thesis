@@ -9,22 +9,27 @@ import seaborn as sns
 
 
 if __name__ == '__main__':
+    SEGMENTS_DIRECTORY = '../recordings/segments-female'
+    USE_CARRIER_PHRASE = True
+    CARRIER_PHRASE_PATH = '../recordings/carrier_phrase_16k_female.wav'
+    SAVE_FIGURES = False
+
     mapper = WordMapper()
     mapper.import_words('../words/all_words.csv', redundant_at=4)
-    mapper.import_recordings('../recordings/segments')
+    mapper.import_recordings(SEGMENTS_DIRECTORY)
 
     mapping = mapper.get_word_recording_mapping(filter_out_redundant=True)
-    mapping = calculate_ranking(mapping, mapper.get_unique_words())
+    mapping = calculate_ranking(mapping, mapper.get_unique_words(), SEGMENTS_DIRECTORY)
     mapping = mapping[mapping['rank'] == 1.0]
     print(mapping.head())
 
     # Generate minimal pairs
     minimal_pairs = find_minimal_pairs(mapper.get_unique_words().tolist())
 
-    runner = Wav2Vec2Runner(use_carrier_phrase=False)
-    predictions = runner.run(mapping, '../recordings/segments')
+    runner = Wav2Vec2Runner(use_carrier_phrase=USE_CARRIER_PHRASE, carrier_phrase_path=CARRIER_PHRASE_PATH)
+    predictions = runner.run(mapping, SEGMENTS_DIRECTORY)
 
-    plot_factory = PlotFactory(save_figures=False)
+    plot_factory = PlotFactory(save_figures=SAVE_FIGURES)
     for (word_a, word_b), different_at in minimal_pairs:
         recording_index = 0
         _, hidden_states_a = predictions[word_a][recording_index]

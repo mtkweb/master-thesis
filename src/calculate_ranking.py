@@ -1,5 +1,6 @@
 from pydub import AudioSegment
 import pandas as pd
+import os
 
 
 def calculate_duration(file: str) -> int:
@@ -12,8 +13,8 @@ def get_ranking_within_group(group: pd.DataFrame) -> pd.DataFrame:
     return group
 
 
-def calculate_ranking(mapping: pd.DataFrame, unique_words: pd.Series) -> pd.DataFrame:
-    mapping['duration'] = mapping['recording'].apply(lambda file: calculate_duration(f'../recordings/segments/{file}'))
+def calculate_ranking(mapping: pd.DataFrame, unique_words: pd.Series, directory: str) -> pd.DataFrame:
+    mapping['duration'] = mapping['recording'].apply(lambda file: calculate_duration(os.path.join(directory, file)))
     grouped = mapping.groupby('Value')
 
     group_data = {}

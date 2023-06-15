@@ -11,17 +11,17 @@ class Wav2Vec2Runner:
     MODEL_NAME = 'facebook/wav2vec2-base-960h'
     SAMPLE_RATE = 16000
 
-    def __init__(self, use_carrier_phrase: bool):
+    def __init__(self, use_carrier_phrase: bool, carrier_phrase_path: str):
         self.use_carrier_phrase = use_carrier_phrase
-        self._initialize_model()
+        self._initialize_model(carrier_phrase_path)
 
-    def _initialize_model(self):
+    def _initialize_model(self, carrier_phrase_path: str):
         self.model = Wav2Vec2ForCTC.from_pretrained(Wav2Vec2Runner.MODEL_NAME)
         self.processor = Wav2Vec2Processor.from_pretrained(Wav2Vec2Runner.MODEL_NAME)
         self.config = Wav2Vec2Config.from_pretrained(Wav2Vec2Runner.MODEL_NAME)
 
         if self.use_carrier_phrase:
-            self.carrier_phrase, _ = librosa.load('../recordings/carrier_phrase_16k.wav', sr=Wav2Vec2Runner.SAMPLE_RATE)
+            self.carrier_phrase, _ = librosa.load(carrier_phrase_path, sr=Wav2Vec2Runner.SAMPLE_RATE)
             self.carrier_phrase = np.concatenate([[
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
