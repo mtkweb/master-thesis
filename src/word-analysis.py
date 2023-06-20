@@ -9,9 +9,10 @@ import seaborn as sns
 
 
 if __name__ == '__main__':
-    SEGMENTS_DIRECTORY = '../recordings/segments-female'
-    USE_CARRIER_PHRASE = True
-    CARRIER_PHRASE_PATH = '../recordings/carrier_phrase_16k_female.wav'
+    SEGMENTS_DIRECTORY = '../recordings/segments-male'
+    SPEAKER = 'male'
+    USE_CARRIER_PHRASE = False
+    CARRIER_PHRASE_PATH = '../recordings/carrier_phrase_16k_male.wav'
     SAVE_FIGURES = False
 
     mapper = WordMapper()
@@ -29,7 +30,7 @@ if __name__ == '__main__':
     runner = Wav2Vec2Runner(use_carrier_phrase=USE_CARRIER_PHRASE, carrier_phrase_path=CARRIER_PHRASE_PATH)
     predictions = runner.run(mapping, SEGMENTS_DIRECTORY)
 
-    plot_factory = PlotFactory(save_figures=SAVE_FIGURES)
+    plot_factory = PlotFactory(save_figures=SAVE_FIGURES, speaker=SPEAKER)
     for (word_a, word_b), different_at in minimal_pairs:
         recording_index = 0
         _, hidden_states_a = predictions[word_a][recording_index]

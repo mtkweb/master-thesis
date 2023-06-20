@@ -8,12 +8,13 @@ import matplotlib.pyplot as plt
 
 class PlotFactory:
 
-    def __init__(self, save_figures: bool):
+    def __init__(self, save_figures: bool, speaker: str):
         self.comparisons: List[Comparison] = []
         self.path_similarities: List[List[torch.Tensor]] = []
         self.longest_path_length = None
 
         self.save_figures = save_figures
+        self.speaker = speaker
 
     def add_comparison(self, comparison: Comparison):
         self.comparisons.append(comparison)
@@ -36,7 +37,7 @@ class PlotFactory:
         plot = sns.lineplot(data=all_data, x='x_rounded', y='y', hue='different_at', alpha=0.3, errorbar=('pi', 50))
         plot.set(xlabel='Time', ylabel='Cosine similarity')
         plot.set(xlim=(0, 1), ylim=(0, 1))
-        plot.set(title='Cosine similarity along DTW path for all minimal pairs at layer ' + str(layer))
+        plot.set(title='Cosine similarity along DTW path for all minimal pairs at layer ' + str(layer) + '\nfor the ' + self.speaker + ' speaker')
 
         if self.save_figures:
             plt.savefig('layer_' + str(layer) + '.png')
