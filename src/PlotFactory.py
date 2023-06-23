@@ -16,6 +16,9 @@ class PlotFactory:
         self.save_figures = save_figures
         self.speaker = speaker
 
+    def get_all_comparisons(self):
+        return self.comparisons
+
     def add_comparison(self, comparison: Comparison):
         self.comparisons.append(comparison)
 

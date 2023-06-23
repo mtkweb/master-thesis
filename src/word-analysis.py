@@ -1,3 +1,5 @@
+import pandas as pd
+import os
 from src.Comparison import Comparison
 from src.PlotFactory import PlotFactory
 from src.Wav2Vec2Runner import Wav2Vec2Runner
@@ -9,11 +11,12 @@ import seaborn as sns
 
 
 if __name__ == '__main__':
-    SEGMENTS_DIRECTORY = '../recordings/segments-male'
-    SPEAKER = 'male'
+    SEGMENTS_DIRECTORY = '../recordings/segments-female'
+    SPEAKER = 'female'
     USE_CARRIER_PHRASE = False
-    CARRIER_PHRASE_PATH = '../recordings/carrier_phrase_16k_male.wav'
+    CARRIER_PHRASE_PATH = '../recordings/carrier_phrase_16k_female.wav'
     SAVE_FIGURES = False
+    DATA_FILE_NAME = 'female_without_carrier_phrase.pkl'
 
     mapper = WordMapper()
     mapper.import_words('../words/all_words.csv', redundant_at=4)
@@ -52,4 +55,21 @@ if __name__ == '__main__':
         #all_similarities.append(similarities_along_path)
         plot_factory.add_comparison(comparison)
 
-    plot_factory.plot_all_layers()
+    #plot_factory.plot_all_layers()
+
+    comparisons = plot_factory.get_all_comparisons()
+    comparison_data = [
+        {
+            'word_a': comparison.get_word_a(),
+            'word_b': comparison.get_word_b(),
+            'different_at': comparison.get_different_at(),
+            'layer': i,
+            'minimum_similarity': comparison.get_minimum_similarity_along_path(i).item(),
+            'position_of_minimum': comparison.get_relative_position_of_minimum_similarity_along_path(i).item(),
+            'similarity_std': comparison.get_std_of_path_similarities(i).item(),
+        }
+        for comparison in comparisons
+        for i in range(13)
+    ]
+
+    pd.DataFrame(comparison_data).to_pickle(os.path.join('analysis_data', DATA_FILE_NAME), compression=None)

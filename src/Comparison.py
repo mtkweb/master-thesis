@@ -12,20 +12,29 @@ class Comparison:
         self.hidden_states_b = hidden_states_b
         self.diff_at = different_at
 
-        dtw_alignment = self.calculate_alignment()
+        dtw_alignment = self._calculate_alignment()
         self.alignment = list(zip(dtw_alignment.index1, dtw_alignment.index2))
+
+        self.all_path_similarities = None
+        self._get_all_path_similarities()
+
+    def get_word_a(self) -> str:
+        return self.word_a
+
+    def get_word_b(self) -> str:
+        return self.word_b
 
     def get_different_at(self) -> int:
         return self.diff_at
 
-    def calculate_alignment(self) -> List[Tuple[int, int]]:
+    def _calculate_alignment(self) -> List[Tuple[int, int]]:
         return dtw.dtw(
             # We need cost here, so we subtract the similarities from 1
-            x=1-self.calculate_all_similarities(0),
+            x=1-self._calculate_all_similarities(0),
             keep_internals=True,
         )
 
-    def calculate_all_similarities(self, hidden_layer_index) -> torch.Tensor:
+    def _calculate_all_similarities(self, hidden_layer_index) -> torch.Tensor:
         hidden_states_a_at_layer = self.hidden_states_a[hidden_layer_index]
         hidden_states_b_at_layer = self.hidden_states_b[hidden_layer_index]
 
@@ -43,13 +52,21 @@ class Comparison:
 
         return similarities_2d_array
 
-    def get_all_path_similarities(self) -> List[torch.Tensor]:
+    def _get_all_path_similarities(self) -> List[torch.Tensor]:
+        if self.all_path_similarities is not None:
+            return self.all_path_similarities
+
         similarities = []
         for hidden_layer_index in range(len(self.hidden_states_a)):
             similarities.append(self.calculate_similarity_along_path(hidden_layer_index))
+
+        self.all_path_similarities = similarities
         return similarities
 
     def calculate_similarity_along_path(self, hidden_layer_index: int) -> torch.Tensor:
+        if self.all_path_similarities is not None:
+            return self.all_path_similarities[hidden_layer_index]
+
         return torch.Tensor([
             torch.cosine_similarity(
                 self.hidden_states_a[hidden_layer_index][i],
@@ -58,3 +75,15 @@ class Comparison:
             )
             for i, j in self.alignment
         ])
+
+    def get_minimum_similarity_along_path(self, hidden_layer_index: int) -> torch.Tensor:
+        return torch.min(self.calculate_similarity_along_path(hidden_layer_index))
+
+    def get_relative_position_of_minimum_similarity_along_path(self, hidden_layer_index: int) -> float:
+        path_similarities = self.calculate_similarity_along_path(hidden_layer_index)
+        index = torch.argmin(path_similarities)
+        return index / len(path_similarities)
+
+    def get_std_of_path_similarities(self, hidden_layer_index: int) -> torch.Tensor:
+        path_similarities = self.calculate_similarity_along_path(hidden_layer_index)
+        return torch.std(path_similarities)
