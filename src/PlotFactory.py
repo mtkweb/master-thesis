@@ -8,13 +8,18 @@ import matplotlib.pyplot as plt
 
 class PlotFactory:
 
-    def __init__(self, save_figures: bool, speaker: str):
+    def __init__(self, save_figures: bool, speaker: str, include_error_bars: bool = True):
         self.comparisons: List[Comparison] = []
         self.path_similarities: List[List[torch.Tensor]] = []
         self.longest_path_length = None
 
         self.save_figures = save_figures
         self.speaker = speaker
+
+        if include_error_bars:
+            self.error_bar = ('pi', 50)
+        else:
+            self.error_bar = None
 
     def get_all_comparisons(self):
         return self.comparisons
@@ -37,7 +42,7 @@ class PlotFactory:
         all_data = pd.concat(dataframes)
         all_data['x_rounded'] = all_data['x'].apply(lambda x: round(x / 0.05) * 0.05)
 
-        plot = sns.lineplot(data=all_data, x='x_rounded', y='y', hue='different_at', alpha=0.3, errorbar=('pi', 50))
+        plot = sns.lineplot(data=all_data, x='x_rounded', y='y', hue='different_at', alpha=0.3, errorbar=self.error_bar)
         plot.set(xlabel='Time', ylabel='Cosine similarity')
         plot.set(xlim=(0, 1), ylim=(0, 1))
         plot.set(title='Cosine similarity along DTW path for all minimal pairs at layer ' + str(layer) + '\nfor the ' + self.speaker + ' speaker')

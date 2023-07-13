@@ -55,7 +55,7 @@ if __name__ == '__main__':
         #all_similarities.append(similarities_along_path)
         plot_factory.add_comparison(comparison)
 
-    #plot_factory.plot_all_layers()
+    plot_factory.plot_all_layers()
 
     comparisons = plot_factory.get_all_comparisons()
     comparison_data = [

@@ -12,7 +12,7 @@ class Comparison:
         self.hidden_states_b = hidden_states_b
         self.diff_at = different_at
 
-        dtw_alignment = self._calculate_alignment()
+        dtw_alignment = self.calculate_alignment()
         self.alignment = list(zip(dtw_alignment.index1, dtw_alignment.index2))
 
         self.all_path_similarities = None
@@ -27,7 +27,7 @@ class Comparison:
     def get_different_at(self) -> int:
         return self.diff_at
 
-    def _calculate_alignment(self) -> List[Tuple[int, int]]:
+    def calculate_alignment(self) -> List[Tuple[int, int]]:
         return dtw.dtw(
             # We need cost here, so we subtract the similarities from 1
             x=1-self._calculate_all_similarities(0),
