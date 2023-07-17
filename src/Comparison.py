@@ -67,6 +67,14 @@ class Comparison:
         if self.all_path_similarities is not None:
             return self.all_path_similarities[hidden_layer_index]
 
+        """return torch.Tensor([
+            torch.dot(
+                self.hidden_states_a[hidden_layer_index][i],
+                self.hidden_states_b[hidden_layer_index][j],
+            )
+            for i, j in self.alignment
+        ])"""
+
         return torch.Tensor([
             torch.cosine_similarity(
                 self.hidden_states_a[hidden_layer_index][i],
