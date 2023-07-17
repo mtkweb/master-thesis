@@ -6,23 +6,25 @@ from src.calculate_ranking import calculate_ranking
 
 
 if __name__ == '__main__':
+    SEGMENTS_DIRECTORY = '../recordings/segments-male'
+    CARRIER_PHRASE_PATH = '../recordings/carrier_phrase_16k_male.wav'
+
     mapper = WordMapper()
     mapper.import_words('../words/all_words.csv', redundant_at=4)
-    mapper.import_recordings('../recordings/segments')
+    mapper.import_recordings(SEGMENTS_DIRECTORY)
 
     mapping = mapper.get_word_recording_mapping(filter_out_redundant=True)
-    mapping = calculate_ranking(mapping, mapper.get_unique_words())
+    mapping = calculate_ranking(mapping, mapper.get_unique_words(), SEGMENTS_DIRECTORY)
     mapping = mapping[mapping['rank'] <= 2.0]
     print(mapping.head())
 
     unique_words = mapper.get_unique_words()
 
-    runner = Wav2Vec2Runner(use_carrier_phrase=False)
-    predictions = runner.run(mapping, '../recordings/segments')
+    runner = Wav2Vec2Runner(use_carrier_phrase=False, carrier_phrase_path=CARRIER_PHRASE_PATH)
+    predictions = runner.run(mapping, SEGMENTS_DIRECTORY)
 
-    plot_factory = PlotFactory(save_figures=False)
+    plot_factory = PlotFactory(save_figures=False, speaker='male')
     for word in unique_words:
-        recording_index = 0
         _, hidden_states_a = predictions[word][0]
         _, hidden_states_b = predictions[word][1]
 
